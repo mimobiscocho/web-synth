@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Synthé Web Modulaire</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: linear-gradient(135deg, #232526 0%, #414345 100%);
+      color: #f3f3f3;
+      margin: 0;
+      min-height: 100vh;
+    }
+    h1 {
+      text-align: center;
+      margin-top: 32px;
+      letter-spacing: 2px;
+      font-weight: 700;
+      color: #ffb347;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.6);
+    }
+    #startAudio {
+      display: block;
+      margin: 20px auto 8px;
+      padding: 12px 24px;
+      font-size: 1.1em;
+      font-weight: 700;
+      border: none;
+      border-radius: 10px;
+      background: #ffd580;
+      color: #232526;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      transition: background .2s, transform .1s;
+    }
+    #startAudio:hover { background:#ffb347; transform: translateY(-1px); }
+    #audioStatus { text-align:center; font-size:.95em; color:#9be093; display:none; }
+
+    .button-container {
+      display: none; /* visible après clic sur Démarrer Audio */
+      text-align: center;
+      margin: 16px auto 8px;
+      max-width: 1100px;
+      padding: 0 12px;
+      display: none;
+    }
+    .button-container .row {
+      display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;
+    }
+    .button-container button {
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: none;
+      background: #ffd580;
+      color: #232526;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      transition: background .2s, transform .1s;
+    }
+    .button-container button:hover { background:#ffb347; transform: translateY(-1px); }
+
+    .modules {
+      display: flex; flex-wrap: wrap; justify-content: center;
+      gap: 24px; margin: 24px 0; padding: 0 12px;
+    }
+    .module {
+      border: 1.5px solid #ffb347;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #232526 60%, #2c3e50 100%);
+      padding: 20px 24px 16px;
+      min-width: 240px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+      transition: box-shadow .2s, border .2s;
+    }
+    .module:hover { box-shadow: 0 6px 20px rgba(255,179,71,0.2); border-color:#ffd580; }
+    .module h3 { margin:0 0 8px; color:#ffd580; font-size:1.05em; letter-spacing:.5px; }
+    .controls label { display:block; margin:10px 0 6px; font-size:.96em; }
+    .controls input[type=range] { width: 140px; accent-color:#ffb347; margin-left:8px; }
+    select, button.toOut {
+      margin-top: 8px; padding: 6px 10px; border-radius: 6px;
+      border: 1px solid #ffb347; background:#232526; color:#ffd580; cursor:pointer;
+    }
+    select:focus, button.toOut:focus { outline: 2px solid #ffd580; }
+    button.toOut:hover { background:#ffb347; color:#232526; }
+    .module .trigger-btn, .module .release-btn {
+      margin: 2px 4px; padding: 4px 8px; border-radius: 4px;
+      border: 1px solid #ffb347; background:#232526; color:#ffd580; cursor:pointer;
+    }
+    .module .trigger-btn:hover, .module .release-btn:hover { background:#ffb347; color:#232526; }
+  </style>
+</head>
+<body>
+  <h1>Synthé Web Modulaire</h1>
+
+  <button id="startAudio">🎵 Démarrer Audio</button>
+  <div id="audioStatus">Audio démarré ✔️</div>
+
+  <div class="button-container" id="moduleButtons">
+    <div class="row">
+      <button id="addOsc">Ajouter Oscillateur</button>
+      <button id="addGain">Ajouter Gain</button>
+      <button id="addFilter">Ajouter Filtre</button>
+      <button id="addDelay">Ajouter Delay</button>
+      <button id="addReverb">Ajouter Reverb</button>
+      <button id="addDist">Ajouter Distortion</button>
+      <button id="addLFO">Ajouter LFO</button>
+      <button id="addComp">Ajouter Compressor</button>
+      <button id="addChorus">Ajouter Chorus</button>
+      <button id="addEnv">Ajouter Envelope</button>
+      <button id="addNoise">Ajouter Noise</button>
+    </div>
+  </div>
+
+  <div class="modules" id="modules"></div>
+
+  <script src="src/main.js"></script>
+  <script>
+    const startBtn = document.getElementById('startAudio');
+    const moduleButtons = document.getElementById('moduleButtons');
+    const audioStatus = document.getElementById('audioStatus');
+
+    startBtn.addEventListener('click', async () => {
+      if (typeof ensureAudioStarted === 'function') {
+        await ensureAudioStarted();
+      }
+      startBtn.style.display = 'none';
+      moduleButtons.style.display = 'block';
+      audioStatus.style.display = 'block';
+    });
+  </script>
+</body>
+</html>
