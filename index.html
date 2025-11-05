@@ -2,132 +2,639 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <title>Synthé Web Modulaire</title>
+  <title>Synthé Web Modulaire - Version Améliorée</title>
   <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
     body {
       font-family: 'Segoe UI', Arial, sans-serif;
-      background: linear-gradient(135deg, #232526 0%, #414345 100%);
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
       color: #f3f3f3;
       margin: 0;
       min-height: 100vh;
+      overflow-x: hidden;
     }
     h1 {
       text-align: center;
-      margin-top: 32px;
+      margin: 20px 0;
       letter-spacing: 2px;
       font-weight: 700;
-      color: #ffb347;
-      text-shadow: 0 2px 8px rgba(0,0,0,0.6);
+      color: #00d4ff;
+      text-shadow: 0 2px 8px rgba(0,212,255,0.3);
     }
-    #startAudio {
-      display: block;
-      margin: 20px auto 8px;
-      padding: 12px 24px;
-      font-size: 1.1em;
-      font-weight: 700;
-      border: none;
-      border-radius: 10px;
-      background: #ffd580;
-      color: #232526;
-      cursor: pointer;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-      transition: background .2s, transform .1s;
+    
+    /* Toolbar */
+    .toolbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: rgba(26, 26, 46, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 10px 20px;
+      border-bottom: 1px solid rgba(0, 212, 255, 0.2);
+      z-index: 1000;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      align-items: center;
     }
-    #startAudio:hover { background:#ffb347; transform: translateY(-1px); }
-    #audioStatus { text-align:center; font-size:.95em; color:#9be093; display:none; }
-
-    .button-container {
-      display: none; /* visible après clic sur Démarrer Audio */
-      text-align: center;
-      margin: 16px auto 8px;
-      max-width: 1100px;
-      padding: 0 12px;
-      display: none;
-    }
-    .button-container .row {
-      display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;
-    }
-    .button-container button {
-      padding: 10px 14px;
-      border-radius: 8px;
-      border: none;
-      background: #ffd580;
-      color: #232526;
+    
+    .toolbar button {
+      padding: 8px 16px;
+      border-radius: 6px;
+      border: 1px solid #00d4ff;
+      background: linear-gradient(135deg, #232352 0%, #1a1a2e 100%);
+      color: #00d4ff;
       font-weight: 600;
       cursor: pointer;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-      transition: background .2s, transform .1s;
+      transition: all 0.2s;
+      font-size: 0.9em;
     }
-    .button-container button:hover { background:#ffb347; transform: translateY(-1px); }
-
-    .modules {
-      display: flex; flex-wrap: wrap; justify-content: center;
-      gap: 24px; margin: 24px 0; padding: 0 12px;
+    
+    .toolbar button:hover {
+      background: #00d4ff;
+      color: #1a1a2e;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 212, 255, 0.3);
     }
+    
+    .toolbar button:active {
+      transform: translateY(0);
+    }
+    
+    #startAudio {
+      background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%) !important;
+      color: #1a1a2e !important;
+      font-size: 1em;
+      padding: 10px 20px;
+      margin-right: 20px;
+    }
+    
+    /* Workspace */
+    .workspace {
+      position: relative;
+      margin-top: 80px;
+      min-height: calc(100vh - 80px);
+      background-image: 
+        radial-gradient(circle at 25% 25%, rgba(0, 212, 255, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 75% 75%, rgba(0, 212, 255, 0.05) 0%, transparent 50%);
+    }
+    
+    /* Grid background */
+    .workspace::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image: 
+        linear-gradient(rgba(0, 212, 255, 0.1) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 212, 255, 0.1) 1px, transparent 1px);
+      background-size: 20px 20px;
+      pointer-events: none;
+      opacity: 0.3;
+    }
+    
+    /* Modules */
     .module {
-      border: 1.5px solid #ffb347;
-      border-radius: 16px;
-      background: linear-gradient(135deg, #232526 60%, #2c3e50 100%);
-      padding: 20px 24px 16px;
-      min-width: 240px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.4);
-      transition: box-shadow .2s, border .2s;
+      position: absolute;
+      min-width: 200px;
+      background: linear-gradient(135deg, rgba(35, 35, 82, 0.95) 0%, rgba(26, 26, 46, 0.95) 100%);
+      border: 2px solid rgba(0, 212, 255, 0.6);
+      border-radius: 12px;
+      backdrop-filter: blur(10px);
+      box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      cursor: move;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      user-select: none;
     }
-    .module:hover { box-shadow: 0 6px 20px rgba(255,179,71,0.2); border-color:#ffd580; }
-    .module h3 { margin:0 0 8px; color:#ffd580; font-size:1.05em; letter-spacing:.5px; }
-    .controls label { display:block; margin:10px 0 6px; font-size:.96em; }
-    .controls input[type=range] { width: 140px; accent-color:#ffb347; margin-left:8px; }
-    select, button.toOut {
-      margin-top: 8px; padding: 6px 10px; border-radius: 6px;
-      border: 1px solid #ffb347; background:#232526; color:#ffd580; cursor:pointer;
+    
+    .module:hover {
+      border-color: #00d4ff;
+      box-shadow: 
+        0 12px 40px rgba(0, 0, 0, 0.4),
+        0 0 20px rgba(0, 212, 255, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      transform: translateY(-2px);
     }
-    select:focus, button.toOut:focus { outline: 2px solid #ffd580; }
-    button.toOut:hover { background:#ffb347; color:#232526; }
-    .module .trigger-btn, .module .release-btn {
-      margin: 2px 4px; padding: 4px 8px; border-radius: 4px;
-      border: 1px solid #ffb347; background:#232526; color:#ffd580; cursor:pointer;
+    
+    .module.dragging {
+      z-index: 1000;
+      transition: none !important;
+      transform: scale(1.02);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+      border-color: #00ff88;
     }
-    .module .trigger-btn:hover, .module .release-btn:hover { background:#ffb347; color:#232526; }
+    
+    .module-header {
+      background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
+      color: #1a1a2e;
+      padding: 8px 12px;
+      border-radius: 10px 10px 0 0;
+      font-weight: 700;
+      font-size: 0.9em;
+      text-align: center;
+      position: relative;
+    }
+    
+    .module-close {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      color: #1a1a2e;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: bold;
+    }
+    
+    .module-close:hover {
+      background: rgba(255, 0, 0, 0.8);
+      color: white;
+    }
+    
+    .module-content {
+      padding: 12px;
+    }
+    
+    /* Ports */
+    .ports {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    
+    .port {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      border: 2px solid #00d4ff;
+      background: #1a1a2e;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.2s;
+    }
+    
+    .port:hover {
+      background: #00d4ff;
+      box-shadow: 0 0 10px rgba(0, 212, 255, 0.6);
+      transform: scale(1.2);
+    }
+    
+    .port.input {
+      margin-right: auto;
+    }
+    
+    .port.output {
+      margin-left: auto;
+    }
+    
+    .port.connected {
+      background: #00ff88;
+      border-color: #00ff88;
+      box-shadow: 0 0 8px rgba(0, 255, 136, 0.4);
+    }
+    
+    /* Controls */
+    .controls {
+      margin-top: 10px;
+    }
+    
+    .control-group {
+      margin-bottom: 10px;
+    }
+    
+    .control-group label {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 0.85em;
+      color: #00d4ff;
+      font-weight: 500;
+    }
+    
+    .control-group input[type="range"] {
+      width: 100%;
+      height: 6px;
+      background: rgba(0, 212, 255, 0.2);
+      border-radius: 3px;
+      outline: none;
+      -webkit-appearance: none;
+    }
+    
+    .control-group input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #00d4ff;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0, 212, 255, 0.4);
+    }
+    
+    .control-group input[type="range"]::-moz-range-thumb {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #00d4ff;
+      cursor: pointer;
+      border: none;
+      box-shadow: 0 2px 8px rgba(0, 212, 255, 0.4);
+    }
+    
+    .control-group select, .control-group button {
+      width: 100%;
+      padding: 6px;
+      border: 1px solid rgba(0, 212, 255, 0.4);
+      border-radius: 4px;
+      background: rgba(26, 26, 46, 0.8);
+      color: #00d4ff;
+      font-size: 0.85em;
+      cursor: pointer;
+    }
+    
+    .control-group button:hover {
+      background: #00d4ff;
+      color: #1a1a2e;
+    }
+    
+    /* Câbles */
+    .cable {
+      position: absolute;
+      pointer-events: none;
+      z-index: 10;
+    }
+    
+    .cable-line {
+      stroke: #00ff88;
+      stroke-width: 3;
+      fill: none;
+      filter: drop-shadow(0 0 4px rgba(0, 255, 136, 0.6));
+    }
+    
+    .cable-temp {
+      stroke: #ff6b6b;
+      stroke-width: 2;
+      stroke-dasharray: 5,5;
+      fill: none;
+      opacity: 0.8;
+    }
+    
+    /* Status et messages */
+    .status {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      background: rgba(0, 212, 255, 0.9);
+      color: #1a1a2e;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 0.9em;
+      font-weight: 600;
+      display: none;
+    }
+    
+    .status.show {
+      display: block;
+      animation: fadeInOut 3s ease-in-out;
+    }
+    
+    @keyframes fadeInOut {
+      0%, 100% { opacity: 0; transform: translateY(10px); }
+      20%, 80% { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Clavier Musical */
+    .keyboard-container {
+      position: fixed;
+      bottom: -400px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 90%;
+      max-width: 800px;
+      background: linear-gradient(135deg, rgba(26, 26, 46, 0.98) 0%, rgba(22, 33, 62, 0.98) 100%);
+      border: 2px solid rgba(0, 212, 255, 0.6);
+      border-radius: 16px 16px 0 0;
+      backdrop-filter: blur(15px);
+      box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.4);
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 2000;
+    }
+    
+    .keyboard-container.show {
+      bottom: 0;
+    }
+    
+    .keyboard-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 20px;
+      border-bottom: 1px solid rgba(0, 212, 255, 0.2);
+      background: linear-gradient(135deg, rgba(0, 212, 255, 0.1) 0%, rgba(0, 153, 204, 0.1) 100%);
+      border-radius: 14px 14px 0 0;
+    }
+    
+    .keyboard-header h3 {
+      margin: 0;
+      color: #00d4ff;
+      font-size: 1.2em;
+      font-weight: 700;
+    }
+    
+    .keyboard-close {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(0, 212, 255, 0.4);
+      color: #00d4ff;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 18px;
+      font-weight: bold;
+      transition: all 0.2s;
+    }
+    
+    .keyboard-close:hover {
+      background: rgba(255, 0, 0, 0.8);
+      color: white;
+      border-color: rgba(255, 0, 0, 0.8);
+    }
+    
+    .keyboard {
+      display: block;
+      height: 120px;
+      padding: 20px 10px;
+      position: relative;
+      overflow-x: auto;
+      overflow-y: visible;
+      /* Centrage automatique avec margin: 0 auto dans JS */
+    }
+    
+    .key {
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.9em;
+      transition: all 0.1s ease;
+      user-select: none;
+      position: absolute;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding-bottom: 8px;
+    }
+    
+    .key.white {
+      width: 32px;
+      height: 90px;
+      background: linear-gradient(to bottom, #ffffff 0%, #f8f8f8 100%);
+      color: #333;
+      border-radius: 0 0 6px 6px;
+      box-shadow: 
+        0 2px 8px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8),
+        0 0 0 1px rgba(0, 0, 0, 0.1);
+      z-index: 1;
+      top: 0;
+    }
+    
+    .key.black {
+      width: 22px;
+      height: 60px;
+      background: linear-gradient(to bottom, #333 0%, #111 100%);
+      color: #fff;
+      border-radius: 0 0 4px 4px;
+      box-shadow: 
+        0 3px 8px rgba(0, 0, 0, 0.6),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1),
+        0 0 0 1px rgba(0, 0, 0, 0.3);
+      z-index: 2;
+      top: 0;
+    }
+    
+    .key:hover {
+      transform: translateY(2px);
+    }
+    
+    .key.active,
+    .key:active {
+      transform: translateY(4px);
+      box-shadow: 
+        0 1px 3px rgba(0, 0, 0, 0.3),
+        inset 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .key.white.active,
+    .key.white:active {
+      background: linear-gradient(to bottom, #e8e8e8 0%, #d8d8d8 100%);
+      color: #00d4ff;
+    }
+    
+    .key.black.active,
+    .key.black:active {
+      background: linear-gradient(to bottom, #555 0%, #222 100%);
+      color: #00ff88;
+    }
+    
+    .keyboard-controls {
+      padding: 16px 20px;
+      border-top: 1px solid rgba(0, 212, 255, 0.2);
+      background: rgba(0, 0, 0, 0.1);
+    }
+    
+    .control-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    
+    .control-row label {
+      color: #00d4ff;
+      font-weight: 600;
+      min-width: 120px;
+    }
+    
+    .control-row input[type="range"] {
+      flex: 1;
+      margin: 0 12px;
+      height: 6px;
+      background: rgba(0, 212, 255, 0.2);
+      border-radius: 3px;
+      outline: none;
+      -webkit-appearance: none;
+    }
+    
+    .control-row input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #00d4ff;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0, 212, 255, 0.4);
+    }
+    
+    .keyboard-info {
+      margin-top: 16px;
+      padding: 12px;
+      background: rgba(0, 212, 255, 0.05);
+      border-radius: 8px;
+      border: 1px solid rgba(0, 212, 255, 0.1);
+    }
+    
+    .keyboard-info p {
+      margin: 4px 0;
+      font-size: 0.85em;
+      color: rgba(255, 255, 255, 0.8);
+    }
+    
+    .keyboard-info strong {
+      color: #00d4ff;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+      .toolbar {
+        padding: 8px 10px;
+      }
+      
+      .toolbar button {
+        padding: 6px 10px;
+        font-size: 0.8em;
+      }
+      
+      .module {
+        min-width: 150px;
+      }
+      
+      .module-header {
+        padding: 6px 10px;
+        font-size: 0.8em;
+      }
+      
+      .module-content {
+        padding: 8px;
+      }
+      
+      .keyboard-container {
+        width: 98%;
+        bottom: -320px;
+        max-width: none;
+      }
+      
+      .keyboard {
+        height: 80px;
+        padding: 10px 5px;
+        overflow-x: auto;
+      }
+      
+      .key.white {
+        width: 24px;
+        height: 60px;
+        font-size: 0.7em;
+        padding-bottom: 4px;
+      }
+      
+      .key.black {
+        width: 16px;
+        height: 40px;
+        font-size: 0.6em;
+      }
+      
+      .keyboard-controls {
+        padding: 12px 16px;
+      }
+      
+      .control-row {
+        margin-bottom: 8px;
+      }
+      
+      .control-row label {
+        min-width: 80px;
+        font-size: 0.9em;
+      }
+      
+      .keyboard-info {
+        display: none;
+      }
+    }
   </style>
 </head>
 <body>
-  <h1>Synthé Web Modulaire</h1>
+  <div class="toolbar">
+    <button id="startAudio">🎵 Démarrer Audio</button>
+    <div style="border-left: 1px solid rgba(0, 212, 255, 0.3); height: 30px; margin: 0 10px;"></div>
+    <button id="addOsc">Oscillateur</button>
+    <button id="addGain">Gain</button>
+    <button id="addFilter">Filtre</button>
+    <button id="addDelay">Delay</button>
+    <button id="addReverb">Reverb</button>
+    <button id="addDist">Distortion</button>
+    <button id="addLFO">LFO</button>
+    <button id="addComp">Compresseur</button>
+    <button id="addChorus">Chorus</button>
+    <button id="addEnv">Envelope</button>
+    <button id="addNoise">Noise</button>
+    <button id="addAudioInput">🎤 Entrée Audio</button>
+    <div style="border-left: 1px solid rgba(0, 212, 255, 0.3); height: 30px; margin: 0 10px;"></div>
+    <button id="clearAll">🗑️ Tout Effacer</button>
+    <button id="savePreset">💾 Sauvegarder</button>
+    <button id="toggleKeyboard">🎹 Clavier</button>
+  </div>
 
-  <button id="startAudio">🎵 Démarrer Audio</button>
-  <div id="audioStatus">Audio démarré ✔️</div>
+  <div class="workspace" id="workspace">
+    <!-- Les modules apparaîtront ici -->
+  </div>
 
-  <div class="button-container" id="moduleButtons">
-    <div class="row">
-      <button id="addOsc">Ajouter Oscillateur</button>
-      <button id="addGain">Ajouter Gain</button>
-      <button id="addFilter">Ajouter Filtre</button>
-      <button id="addDelay">Ajouter Delay</button>
-      <button id="addReverb">Ajouter Reverb</button>
-      <button id="addDist">Ajouter Distortion</button>
-      <button id="addLFO">Ajouter LFO</button>
-      <button id="addComp">Ajouter Compressor</button>
-      <button id="addChorus">Ajouter Chorus</button>
-      <button id="addEnv">Ajouter Envelope</button>
-      <button id="addNoise">Ajouter Noise</button>
+  <!-- SVG pour les câbles -->
+  <svg id="cables" style="position: absolute; top: 80px; left: 0; width: 100%; height: calc(100vh - 80px); pointer-events: none; z-index: 10;">
+  </svg>
+
+  <!-- Clavier Musical -->
+  <div class="keyboard-container" id="keyboardContainer">
+    <div class="keyboard-header">
+      <h3>🎹 Clavier Musical</h3>
+      <button class="keyboard-close" id="closeKeyboard">×</button>
+    </div>
+    <div class="keyboard" id="keyboard">
+      <!-- Les touches seront générées par JavaScript -->
+    </div>
+    <div class="keyboard-controls">
+      <div class="control-row">
+        <label>Octave: <span id="octaveDisplay">4</span></label>
+        <input type="range" id="octaveSlider" min="2" max="6" value="4" step="1">
+      </div>
+      <div class="control-row">
+        <label>Vélocité: <span id="velocityDisplay">80</span></label>
+        <input type="range" id="velocitySlider" min="10" max="127" value="80" step="1">
+      </div>
+      <div class="keyboard-info">
+        <p><strong>Raccourcis clavier:</strong></p>
+        <p>A W S E D F T G Y H U J = Notes C à B</p>
+        <p>Z X = Octave -/+  |  Q = Sustain</p>
+      </div>
     </div>
   </div>
 
-  <div class="modules" id="modules"></div>
+  <!-- Status messages -->
+  <div class="status" id="status"></div>
 
-  <script src="src/main.js"></script>
-  <script>
-    const startBtn = document.getElementById('startAudio');
-    const moduleButtons = document.getElementById('moduleButtons');
-    const audioStatus = document.getElementById('audioStatus');
-
-    startBtn.addEventListener('click', async () => {
-      if (typeof ensureAudioStarted === 'function') {
-        await ensureAudioStarted();
-      }
-      startBtn.style.display = 'none';
-      moduleButtons.style.display = 'block';
-      audioStatus.style.display = 'block';
-    });
-  </script>
+  <script src="src/main-improved.js"></script>
 </body>
 </html>
